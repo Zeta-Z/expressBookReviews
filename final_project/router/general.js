@@ -1,12 +1,27 @@
 const express = require("express");
 let books = require("./booksdb.js");
+//const { use } = require("react");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
 public_users.post("/register", (req, res) => {
   //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+
+  const username = req.body.username;
+  const password = req.body.password;
+
+
+  if(username && password){
+    if(isValid(username)){
+      users.push({"username": username, "password":password});
+      return res.status(200).json({ message: "User successfully registered. Now you can login" });
+    }else{
+      return res.status(400).json({ message: "User already registered!" });
+    }
+  }
+  return res.status(400).json({ message: "Unable to create a new user!" });
+
 });
 
 // Get the book list available in the shop
@@ -57,13 +72,48 @@ public_users.get("/author/:author", function (req, res) {
 // Get all books based on title
 public_users.get("/title/:title", function (req, res) {
   //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+
+  const title = req.params.title;
+  const arregloLibros = [];
+
+  if(title){
+
+    for(const isbn in books){
+      if(books[isbn].title === title){
+        arregloLibros.push(books[isbn]);
+      }
+    }
+    console.log(title);
+
+    return res.status(200).json({message: "Book found!" + JSON.stringify(arregloLibros)})
+
+  }else{
+    return res.status(400).json({message:"Invalid title"});
+  }
+
+
 });
 
 //  Get book review
 public_users.get("/review/:isbn", function (req, res) {
   //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+
+  const isbn = parseInt(req.params.isbn);
+  let  libroReseña = [];
+
+  if(isbn){
+    
+    libroReseña = books[isbn].reviews;
+
+    return res.status(200).json({ message: "This is the book!" + JSON.stringify(libroReseña) });
+
+  }else{
+    return res.status(400).json({
+      message:"Error, invalid ISBN"
+    })
+  }
+
+  
 });
 
 module.exports.general = public_users;
